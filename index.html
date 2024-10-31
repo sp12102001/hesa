@@ -22,33 +22,39 @@
       padding: 20px;
       background: #fff;
       border-radius: 8px;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
       box-sizing: border-box;
     }
     h2 {
       color: #333;
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
+      font-size: 1.6em;
     }
     .author {
       text-align: center;
-      font-size: 1em;
+      font-size: 1.1em;
       font-weight: 600;
       color: #555;
       margin: 15px 0;
-      padding: 5px 0;
-      border-top: 1px solid #ddd;
-      border-bottom: 1px solid #ddd;
+      padding: 10px;
+      background: #e8f4f8;
+      border-radius: 8px;
     }
     
     .step {
       margin-bottom: 20px;
+      padding: 10px;
+      background: #f4f4ff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      transition: background 0.3s;
     }
     .step button {
       display: block;
       width: 100%;
       padding: 12px;
-      background: #0056b3;
+      background: #007bff;
       color: #fff;
       border: none;
       border-radius: 5px;
@@ -58,21 +64,44 @@
       transition: background 0.3s ease;
     }
     .step button:hover {
-      background: #003d80;
+      background: #0056b3;
     }
     .step-content {
       display: none;
       padding: 15px;
-      border: 1px solid #ddd;
       margin-top: 10px;
       background-color: #f9f9f9;
+      border: 1px solid #ddd;
       border-radius: 5px;
+      animation: slideDown 0.3s ease-in-out;
     }
     .step-content.active {
       display: block;
     }
     .step-content p {
       margin: 0 0 10px;
+    }
+
+    /* Button styling */
+    .step-content button {
+      background: #e8f4f8;
+      color: #007bff;
+      border: 1px solid #007bff;
+      border-radius: 5px;
+      padding: 8px 12px;
+      margin: 5px 0;
+      cursor: pointer;
+      transition: all 0.2s ease-in;
+    }
+    .step-content button:hover {
+      background: #007bff;
+      color: #fff;
+    }
+
+    /* Animation */
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
@@ -534,10 +563,9 @@
     </div>
   </div>
 </div>
-
 <script>
   function toggleStep(id) {
-    // Collapse all open steps for a cleaner interaction
+    // Close all open steps for cleaner interaction
     document.querySelectorAll('.step-content.active').forEach(step => step.classList.remove('active'));
     
     // Toggle selected step with smooth scroll
@@ -559,7 +587,6 @@
     }
   }
 </script>
-
 
 </body>
 </html>
