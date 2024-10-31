@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HESA/HESES Error Check Flowchart</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 800px;
+      width: 100%;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      box-sizing: border-box;
+    }
+    h2 {
+      color: #333;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .author {
+      text-align: center;
+      font-size: 1em;
+      font-weight: 600;
+      color: #555;
+      margin: 15px 0;
+      padding: 5px 0;
+      border-top: 1px solid #ddd;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    .step {
+      margin-bottom: 20px;
+    }
+    .step button {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background: #0056b3;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      font-size: 1em;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .step button:hover {
+      background: #003d80;
+    }
+    .step-content {
+      display: none;
+      padding: 15px;
+      border: 1px solid #ddd;
+      margin-top: 10px;
+      background-color: #f9f9f9;
+      border-radius: 5px;
+    }
+    .step-content.active {
+      display: block;
+    }
+    .step-content p {
+      margin: 0 0 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="author">by Sanjana Prabhakar</div>
+  
+  <h2>HESA/HESES Error Check Flowchart</h2>
+
+  <!-- Step 1 -->
+  <div class="step">
+    <button onclick="toggleStep('step1')">1. Fixing Course, Programme, and Route Code Mismatch</button>
+    <div id="step1" class="step-content">
+      <p>1. Open the student’s record in SCE.</p>
+      <p>2. Locate the Course Code and Route Code fields.</p>
+      <p>3. Check if the codes match an official VCO combination.</p>
+      <button onclick="nextStep(1, true)">Yes, they match</button>
+      <button onclick="nextStep(1, false)">No, they don't match</button>
+      <div id="step1-match" class="step-content">
+        <p>If yes, confirm that the course and route codes align with all other registration details. If no other mismatches, proceed to Step 6.</p>
+      </div>
+      <div id="step1-nomatch" class="step-content">
+        <p>If no, retrieve accurate Course and Route Codes from the VCO database. Save the record. If unresolved, send the record ID to Analytics, noting any mismatches for further examination.</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Step 2 -->
+  <div class="step">
+    <button onclick="toggleStep('step2')">2. Resolving Distance Learning vs. Location of Study Mismatch</button>
+    <div id="step2" class="step-content">
+      <p>1. Open the student’s record in SCE.</p>
+      <p>2. Locate the External Study Location (SCE_ELSC) field.</p>
+      <p>3. Is the student eligible for Home Fees and studying in the UK?</p>
+      <button onclick="nextStep(2, 'eligible')">Eligible and in UK</button>
+      <button onclick="nextStep(2, 'notEligible')">Not Eligible or studying outside UK</button>
+      <button onclick="nextStep(2, 'ukAddress')">UK Address, studying abroad</button>
+      <div id="step2-eligible" class="step-content">
+        <p>Set SCE_ELSC to “6” and save the record.</p>
+      </div>
+      <div id="step2-notEligible" class="step-content">
+        <p>Set SCE_ELSC to “7” or “S” and save the record.</p>
+      </div>
+      <div id="step2-ukAddress" class="step-content">
+        <p>If the student’s UK address is outside the UK, set SCE_ELSC to "6" and save the record.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: Correcting End Date, Reason for Leaving, or ITT Outcome -->
+  <div class="step">
+    <button onclick="toggleStep('step3')">3. Correcting End Date, Reason for Leaving, or ITT Outcome</button>
+    <div id="step3" class="step-content">
+      <p>1. Open the student’s record in SCJ and check the "End Date" (SCJ_ENDD) field.</p>
+      <p>2. Confirm that the "End Date" correctly reflects the last structured point in the student's course or their final attempt at assessment:</p>
+      <button onclick="nextStep(3, 'hasEndDate')">End Date exists</button>
+      <button onclick="nextStep(3, 'noEndDate')">End Date is missing</button>
+      <button onclick="nextStep(3, 'futureEndDate')">End Date is in the future</button>
+      <div id="step3-hasEndDate" class="step-content">
+        <p>If an "End Date" exists and "Reason for Leaving" is missing, ensure it is completed.</p>
+        <p>For students in an ITT program, ensure "Outcome Code" aligns with the course requirements. If there are resits or additional assessments, set the end date to the latest assessment attempt, not including subsequent resits.</p>
+      </div>
+      <div id="step3-noEndDate" class="step-content">
+        <p>If the "End Date" is missing, enter the appropriate date. For students who did not return after interruption, backdate to the last active study date. Save the record.</p>
+      </div>
+      <div id="step3-futureEndDate" class="step-content">
+        <p>If the "End Date" is in the future, verify this aligns with ongoing structured activity, such as placements or final assessments. Adjust if necessary and save the record.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 4: Adding or Correcting Student Source of Funding -->
+  <div class="step">
+    <button onclick="toggleStep('step4')">4. Adding or Correcting Student Source of Funding</button>
+    <div id="step4" class="step-content">
+      <p>1. Access the student's record in SCE and navigate to the "SSF Code" (Student Source of Funding) field.</p>
+      <p>2. Review whether the SSF Code is missing or incorrect based on student funding status and location:</p>
+      <button onclick="nextStep(4, 'blank')">SSF Code is Blank</button>
+      <button onclick="nextStep(4, 'incorrect')">SSF Code is Incorrect</button>
+      <div id="step4-blank" class="step-content">
+        <p>If blank, enter the SSF Code per regional eligibility: "03" for Scotland, "04" for Northern Ireland, and any additional specific codes listed in the guidance. Save the record.</p>
+      </div>
+      <div id="step4-incorrect" class="step-content">
+        <p>If incorrect, update the SSF Code based on updated regional funding categories: replace codes like "05" with "91" for new fee structures. Double-check that non-UK domicile students are assigned appropriately under external funding codes. Save the record.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 5: Correcting Domicile Code Errors -->
+  <div class="step">
+    <button onclick="toggleStep('step5')">5. Correcting Domicile Code Errors</button>
+    <div id="step5" class="step-content">
+      <p>1. Open the student’s record in SCJ, specifically the SCJ_CODC (Domicile Code) field.</p>
+      <p>2. Review the domicile code's accuracy and ensure it matches the student's documented residency.</p>
+      <button onclick="nextStep(5, 'blank')">Domicile Code is Blank</button>
+      <button onclick="nextStep(5, 'invalid')">Domicile Code is Invalid</button>
+      <div id="step5-blank" class="step-content">
+        <p>If blank, enter a code that reflects the student's residency status accurately. For UK students, ensure the home postcode aligns with the domicile coding.</p>
+      </div>
+      <div id="step5-invalid" class="step-content">
+        <p>If invalid, replace codes like "782," "783," or "GB" with the correct code per HESA guidance. Verify that any international student codes align with funding eligibility and study location (SCE_ELSC) settings. Save the record.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 6: Resolving Module Activity Without Returnable SCE -->
+  <div class="step">
+    <button onclick="toggleStep('step6')">6. Resolving Module Activity Without Returnable SCE</button>
+    <div id="step6" class="step-content">
+      <p>1. Access the student’s SCE record and confirm their enrollment status alongside module dates.</p>
+      <p>2. Ensure all modules are returnable unless explicitly marked otherwise (e.g., for placement or exempt modules).</p>
+      <p>3. Determine if the student has grades listed but appears non-returnable:</p>
+      <button onclick="nextStep(6, 'gradesNonReturnable')">Yes, grades are present but non-returnable</button>
+      <button onclick="nextStep(6, 'checkDates')">No, module dates do not align with returnable status</button>
+      <div id="step6-gradesNonReturnable" class="step-content">
+        <p>Update "Enrollment Status" to “Returnable” if the student has recorded grades and active modules. Cross-reference module completion dates and update any inconsistencies. Save the record.</p>
+      </div>
+      <div id="step6-checkDates" class="step-content">
+        <p>If module dates are incorrect or incomplete, adjust start and end dates to cover the academic period. Verify that no modules are marked as MOD_ERFM or MAV_ERFM=N unless they are APEL/APL or non-credit. Save the record.</p>
+      </div>
+    </div>
+  </div>
+</div>
+  
+<!-- Step 7 -->
+<div class="step">
+  <button onclick="toggleStep('step7')">7. Fixing Special Fee Indicator Errors</button>
+  <div id="step7" class="step-content">
+    <p>1. Open the student’s SCE record.</p>
+    <p>2. Locate the Special Fee Indicator (SCE_SPFI) field.</p>
+    <p>3. Check if the fee indicator is blank or incorrect for the student type:</p>
+    <button onclick="nextStep(7, 'undergraduate')">Undergraduate</button>
+    <button onclick="nextStep(7, 'postgraduate')">Postgraduate</button>
+    <button onclick="nextStep(7, 'sandwich')">Sandwich Placement</button>
+    <button onclick="nextStep(7, 'erasmus')">Erasmus Placement</button>
+    <div id="step7-undergraduate" class="step-content">
+      <p>Ensure the indicator is not set to “9” for undergraduates on full regulated fee or undergraduate awards. For students on non-standard fees like final year of <15 weeks, use "4"; if between 15-24 weeks, use "5".</p>
+    </div>
+    <div id="step7-postgraduate" class="step-content">
+      <p>Only postgraduate initial teacher training and professional exam preparation students use "0". Other postgraduate students use "9" for ‘Other fee.’</p>
+    </div>
+    <div id="step7-sandwich" class="step-content">
+      <p>Set indicator to “1” for students on a sandwich year where in-university weeks are <10 or the placement extends 30 weeks across reporting periods.</p>
+    </div>
+    <div id="step7-erasmus" class="step-content">
+      <p>For full-year outgoing Erasmus placements, set indicator to “3” irrespective of the fee charged. Confirm overseas status.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Step 8 -->
+<div class="step">
+  <button onclick="toggleStep('step8')">8. Correcting External Student Type Mismatch</button>
+  <div id="step8" class="step-content">
+    <p>1. Open the student’s SCE record.</p>
+    <p>2. Locate the External Student Type (SCE_STYC) field.</p>
+    <p>3. Is the student in an exchange or joint program?</p>
+    <button onclick="nextStep(8, 'erasmus')">Erasmus Exchange</button>
+    <button onclick="nextStep(8, 'jointUK')">Joint Program in UK</button>
+    <button onclick="nextStep(8, 'jointAbroad')">Joint Program Abroad</button>
+    <div id="step8-erasmus" class="step-content">
+      <p>Set SCE_STYC to “6”, “3”, or “G” for Erasmus exchange students. Verify the External Study Location is coded as “T” for full-year or “U” for part-year placements.</p>
+    </div>
+    <div id="step8-jointUK" class="step-content">
+      <p>Set SCE_STYC to “Y” if primarily UK-based joint programs with External Study Location “Z”.</p>
+    </div>
+    <div id="step8-jointAbroad" class="step-content">
+      <p>Set SCE_STYC to “Z” for joint programs primarily based abroad. Ensure location alignment and mark Mobility Data as required if overseas.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Step 9 -->
+<div class="step">
+  <button onclick="toggleStep('step9')">9. Handling Provisional Status on Past Start Dates</button>
+  <div id="step9" class="step-content">
+    <p>1. Open the student’s SCE record.</p>
+    <p>2. Locate the Provisional Status field and check if start date has passed.</p>
+    <button onclick="nextStep(9, 'rat')">Actively Enrolled (RAT)</button>
+    <button onclick="nextStep(9, 'dormant')">Inactive (Dormant)</button>
+    <button onclick="nextStep(9, 'prompt')">Prompt for Enrollment</button>
+    <div id="step9-rat" class="step-content">
+      <p>If the student is active, update the status to “RAT” to confirm active enrollment and save the record.</p>
+    </div>
+    <div id="step9-dormant" class="step-content">
+      <p>If the student is inactive with a past start date, set the status to “Dormant” to resolve. Ensure no upcoming dates require adjustment and save.</p>
+    </div>
+    <div id="step9-prompt" class="step-content">
+      <p>If enrollment confirmation is pending, set status to “Prompt for Enrollment” and reach out for confirmation to update status.</p>
+    </div>
+  </div>
+</div><!-- Step 7 -->
+<div class="step">
+  <button onclick="toggleStep('step7')">7. Fixing Special Fee Indicator Errors</button>
+  <div id="step7" class="step-content">
+    <p>1. Open the student’s SCE record.</p>
+    <p>2. Locate the Special Fee Indicator (SCE_SPFI) field.</p>
+    <p>3. Check if the fee indicator is blank or incorrect for the student type:</p>
+    <button onclick="nextStep(7, 'undergraduate')">Undergraduate</button>
+    <button onclick="nextStep(7, 'postgraduate')">Postgraduate</button>
+    <button onclick="nextStep(7, 'sandwich')">Sandwich Placement</button>
+    <button onclick="nextStep(7, 'erasmus')">Erasmus Placement</button>
+    <div id="step7-undergraduate" class="step-content">
+      <p>Ensure the indicator is not set to “9” for undergraduates on full regulated fee or undergraduate awards. For students on non-standard fees like final year of <15 weeks, use "4"; if between 15-24 weeks, use "5".</p>
+    </div>
+    <div id="step7-postgraduate" class="step-content">
+      <p>Only postgraduate initial teacher training and professional exam preparation students use "0". Other postgraduate students use "9" for ‘Other fee.’</p>
+    </div>
+    <div id="step7-sandwich" class="step-content">
+      <p>Set indicator to “1” for students on a sandwich year where in-university weeks are <10 or the placement extends 30 weeks across reporting periods.</p>
+    </div>
+    <div id="step7-erasmus" class="step-content">
+      <p>For full-year outgoing Erasmus placements, set indicator to “3” irrespective of the fee charged. Confirm overseas status.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Step 8 -->
+<div class="step">
+  <button onclick="toggleStep('step8')">8. Correcting External Student Type Mismatch</button>
+  <div id="step8" class="step-content">
+    <p>1. Open the student’s SCE record.</p>
+    <p>2. Locate the External Student Type (SCE_STYC) field.</p>
+    <p>3. Is the student in an exchange or joint program?</p>
+    <button onclick="nextStep(8, 'erasmus')">Erasmus Exchange</button>
+    <button onclick="nextStep(8, 'jointUK')">Joint Program in UK</button>
+    <button onclick="nextStep(8, 'jointAbroad')">Joint Program Abroad</button>
+    <div id="step8-erasmus" class="step-content">
+      <p>Set SCE_STYC to “6”, “3”, or “G” for Erasmus exchange students. Verify the External Study Location is coded as “T” for full-year or “U” for part-year placements.</p>
+    </div>
+    <div id="step8-jointUK" class="step-content">
+      <p>Set SCE_STYC to “Y” if primarily UK-based joint programs with External Study Location “Z”.</p>
+    </div>
+    <div id="step8-jointAbroad" class="step-content">
+      <p>Set SCE_STYC to “Z” for joint programs primarily based abroad. Ensure location alignment and mark Mobility Data as required if overseas.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Step 9 -->
+<div class="step">
+  <button onclick="toggleStep('step9')">9. Handling Provisional Status on Past Start Dates</button>
+  <div id="step9" class="step-content">
+    <p>1. Open the student’s SCE record.</p>
+    <p>2. Locate the Provisional Status field and check if start date has passed.</p>
+    <button onclick="nextStep(9, 'rat')">Actively Enrolled (RAT)</button>
+    <button onclick="nextStep(9, 'dormant')">Inactive (Dormant)</button>
+    <button onclick="nextStep(9, 'prompt')">Prompt for Enrollment</button>
+    <div id="step9-rat" class="step-content">
+      <p>If the student is active, update the status to “RAT” to confirm active enrollment and save the record.</p>
+    </div>
+    <div id="step9-dormant" class="step-content">
+      <p>If the student is inactive with a past start date, set the status to “Dormant” to resolve. Ensure no upcoming dates require adjustment and save.</p>
+    </div>
+    <div id="step9-prompt" class="step-content">
+      <p>If enrollment confirmation is pending, set status to “Prompt for Enrollment” and reach out for confirmation to update status.</p>
+    </div>
+  </div>
+</div><!-- Step 7 -->
+<div class="step">
+  <button onclick="toggleStep('step7')">7. Fixing Special Fee Indicator Errors</button>
+  <div id="step7" class="step-content">
+    <p>1. Open the student’s SCE record.</p>
+    <p>2. Locate the Special Fee Indicator (SCE_SPFI) field.</p>
+    <p>3. Check if the fee indicator is blank or incorrect for the student type:</p>
+    <button onclick="nextStep(7, 'undergraduate')">Undergraduate</button>
+    <button onclick="nextStep(7, 'postgraduate')">Postgraduate</button>
+    <button onclick="nextStep(7, 'sandwich')">Sandwich Placement</button>
+    <button onclick="nextStep(7, 'erasmus')">Erasmus Placement</button>
+    <div id="step7-undergraduate" class="step-content">
+      <p>Ensure the indicator is not set to “9” for undergraduates on full regulated fee or undergraduate awards. For students on non-standard fees like final year of <15 weeks, use "4"; if between 15-24 weeks, use "5".</p>
+    </div>
+    <div id="step7-postgraduate" class="step-content">
+      <p>Only postgraduate initial teacher training and professional exam preparation students use "0". Other postgraduate students use "9" for ‘Other fee.’</p>
+    </div>
+    <div id="step7-sandwich" class="step-content">
+      <p>Set indicator to “1” for students on a sandwich year where in-university weeks are <10 or the placement extends 30 weeks across reporting periods.</p>
+    </div>
+    <div id="step7-erasmus" class="step-content">
+      <p>For full-year outgoing Erasmus placements, set indicator to “3” irrespective of the fee charged. Confirm overseas status.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Step 8 -->
+<div class="step">
+  <button onclick="toggleStep('step8')">8. Correcting External Student Type Mismatch</button>
+  <div id="step8" class="step-content">
+    <p>1. Open the student’s SCE record.</p>
+    <p>2. Locate the External Student Type (SCE_STYC) field.</p>
+    <p>3. Is the student in an exchange or joint program?</p>
+    <button onclick="nextStep(8, 'erasmus')">Erasmus Exchange</button>
+    <button onclick="nextStep(8, 'jointUK')">Joint Program in UK</button>
+    <button onclick="nextStep(8, 'jointAbroad')">Joint Program Abroad</button>
+    <div id="step8-erasmus" class="step-content">
+      <p>Set SCE_STYC to “6”, “3”, or “G” for Erasmus exchange students. Verify the External Study Location is coded as “T” for full-year or “U” for part-year placements.</p>
+    </div>
+    <div id="step8-jointUK" class="step-content">
+      <p>Set SCE_STYC to “Y” if primarily UK-based joint programs with External Study Location “Z”.</p>
+    </div>
+    <div id="step8-jointAbroad" class="step-content">
+      <p>Set SCE_STYC to “Z” for joint programs primarily based abroad. Ensure location alignment and mark Mobility Data as required if overseas.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Step 9 -->
+<div class="step">
+  <button onclick="toggleStep('step9')">9. Handling Provisional Status on Past Start Dates</button>
+  <div id="step9" class="step-content">
+    <p>1. Open the student’s SCE record.</p>
+    <p>2. Locate the Provisional Status field and check if start date has passed.</p>
+    <button onclick="nextStep(9, 'rat')">Actively Enrolled (RAT)</button>
+    <button onclick="nextStep(9, 'dormant')">Inactive (Dormant)</button>
+    <button onclick="nextStep(9, 'prompt')">Prompt for Enrollment</button>
+    <div id="step9-rat" class="step-content">
+      <p>If the student is active, update the status to “RAT” to confirm active enrollment and save the record.</p>
+    </div>
+    <div id="step9-dormant" class="step-content">
+      <p>If the student is inactive with a past start date, set the status to “Dormant” to resolve. Ensure no upcoming dates require adjustment and save.</p>
+    </div>
+    <div id="step9-prompt" class="step-content">
+      <p>If enrollment confirmation is pending, set status to “Prompt for Enrollment” and reach out for confirmation to update status.</p>
+    </div>
+  </div>
+</div><!-- Step 7 -->
+<div class="step">
+  <button onclick="toggleStep('step7')">7. Fixing Special Fee Indicator Errors</button>
+  <div id="step7" class="step-content">
+    <p>1. Open the student’s SCE record.</p>
+    <p>2. Locate the Special Fee Indicator (SCE_SPFI) field.</p>
+    <p>3. Check if the fee indicator is blank or incorrect for the student type:</p>
+    <button onclick="nextStep(7, 'undergraduate')">Undergraduate</button>
+    <button onclick="nextStep(7, 'postgraduate')">Postgraduate</button>
+    <button onclick="nextStep(7, 'sandwich')">Sandwich Placement</button>
+    <button onclick="nextStep(7, 'erasmus')">Erasmus Placement</button>
+    <div id="step7-undergraduate" class="step-content">
+      <p>Ensure the indicator is not set to “9” for undergraduates on full regulated fee or undergraduate awards. For students on non-standard fees like final year of <15 weeks, use "4"; if between 15-24 weeks, use "5".</p>
+    </div>
+    <div id="step7-postgraduate" class="step-content">
+      <p>Only postgraduate initial teacher training and professional exam preparation students use "0". Other postgraduate students use "9" for ‘Other fee.’</p>
+    </div>
+    <div id="step7-sandwich" class="step-content">
+      <p>Set indicator to “1” for students on a sandwich year where in-university weeks are <10 or the placement extends 30 weeks across reporting periods.</p>
+    </div>
+    <div id="step7-erasmus" class="step-content">
+      <p>For full-year outgoing Erasmus placements, set indicator to “3” irrespective of the fee charged. Confirm overseas status.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Step 8 -->
+<div class="step">
+  <button onclick="toggleStep('step8')">8. Correcting External Student Type Mismatch</button>
+  <div id="step8" class="step-content">
+    <p>1. Open the student’s SCE record.</p>
+    <p>2. Locate the External Student Type (SCE_STYC) field.</p>
+    <p>3. Is the student in an exchange or joint program?</p>
+    <button onclick="nextStep(8, 'erasmus')">Erasmus Exchange</button>
+    <button onclick="nextStep(8, 'jointUK')">Joint Program in UK</button>
+    <button onclick="nextStep(8, 'jointAbroad')">Joint Program Abroad</button>
+    <div id="step8-erasmus" class="step-content">
+      <p>Set SCE_STYC to “6”, “3”, or “G” for Erasmus exchange students. Verify the External Study Location is coded as “T” for full-year or “U” for part-year placements.</p>
+    </div>
+    <div id="step8-jointUK" class="step-content">
+      <p>Set SCE_STYC to “Y” if primarily UK-based joint programs with External Study Location “Z”.</p>
+    </div>
+    <div id="step8-jointAbroad" class="step-content">
+      <p>Set SCE_STYC to “Z” for joint programs primarily based abroad. Ensure location alignment and mark Mobility Data as required if overseas.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Step 9 -->
+<div class="step">
+  <button onclick="toggleStep('step9')">9. Handling Provisional Status on Past Start Dates</button>
+  <div id="step9" class="step-content">
+    <p>1. Open the student’s SCE record.</p>
+    <p>2. Locate the Provisional Status field and check if start date has passed.</p>
+    <button onclick="nextStep(9, 'rat')">Actively Enrolled (RAT)</button>
+    <button onclick="nextStep(9, 'dormant')">Inactive (Dormant)</button>
+    <button onclick="nextStep(9, 'prompt')">Prompt for Enrollment</button>
+    <div id="step9-rat" class="step-content">
+      <p>If the student is active, update the status to “RAT” to confirm active enrollment and save the record.</p>
+    </div>
+    <div id="step9-dormant" class="step-content">
+      <p>If the student is inactive with a past start date, set the status to “Dormant” to resolve. Ensure no upcoming dates require adjustment and save.</p>
+    </div>
+    <div id="step9-prompt" class="step-content">
+      <p>If enrollment confirmation is pending, set status to “Prompt for Enrollment” and reach out for confirmation to update status.</p>
+    </div>
+  </div>
+</div><!-- Step 7 -->
+<div class="step">
+  <button onclick="toggleStep('step7')">7. Fixing Special Fee Indicator Errors</button>
+  <div id="step7" class="step-content">
+    <p>1. Open the student’s SCE record.</p>
+    <p>2. Locate the Special Fee Indicator (SCE_SPFI) field.</p>
+    <p>3. Check if the fee indicator is blank or incorrect for the student type:</p>
+    <button onclick="nextStep(7, 'undergraduate')">Undergraduate</button>
+    <button onclick="nextStep(7, 'postgraduate')">Postgraduate</button>
+    <button onclick="nextStep(7, 'sandwich')">Sandwich Placement</button>
+    <button onclick="nextStep(7, 'erasmus')">Erasmus Placement</button>
+    <div id="step7-undergraduate" class="step-content">
+      <p>Ensure the indicator is not set to “9” for undergraduates on full regulated fee or undergraduate awards. For students on non-standard fees like final year of <15 weeks, use "4"; if between 15-24 weeks, use "5".</p>
+    </div>
+    <div id="step7-postgraduate" class="step-content">
+      <p>Only postgraduate initial teacher training and professional exam preparation students use "0". Other postgraduate students use "9" for ‘Other fee.’</p>
+    </div>
+    <div id="step7-sandwich" class="step-content">
+      <p>Set indicator to “1” for students on a sandwich year where in-university weeks are <10 or the placement extends 30 weeks across reporting periods.</p>
+    </div>
+    <div id="step7-erasmus" class="step-content">
+      <p>For full-year outgoing Erasmus placements, set indicator to “3” irrespective of the fee charged. Confirm overseas status.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Step 8 -->
+<div class="step">
+  <button onclick="toggleStep('step8')">8. Correcting External Student Type Mismatch</button>
+  <div id="step8" class="step-content">
+    <p>1. Open the student’s SCE record.</p>
+    <p>2. Locate the External Student Type (SCE_STYC) field.</p>
+    <p>3. Is the student in an exchange or joint program?</p>
+    <button onclick="nextStep(8, 'erasmus')">Erasmus Exchange</button>
+    <button onclick="nextStep(8, 'jointUK')">Joint Program in UK</button>
+    <button onclick="nextStep(8, 'jointAbroad')">Joint Program Abroad</button>
+    <div id="step8-erasmus" class="step-content">
+      <p>Set SCE_STYC to “6”, “3”, or “G” for Erasmus exchange students. Verify the External Study Location is coded as “T” for full-year or “U” for part-year placements.</p>
+    </div>
+    <div id="step8-jointUK" class="step-content">
+      <p>Set SCE_STYC to “Y” if primarily UK-based joint programs with External Study Location “Z”.</p>
+    </div>
+    <div id="step8-jointAbroad" class="step-content">
+      <p>Set SCE_STYC to “Z” for joint programs primarily based abroad. Ensure location alignment and mark Mobility Data as required if overseas.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Step 9 -->
+<div class="step">
+  <button onclick="toggleStep('step9')">9. Handling Provisional Status on Past Start Dates</button>
+  <div id="step9" class="step-content">
+    <p>1. Open the student’s SCE record.</p>
+    <p>2. Locate the Provisional Status field and check if start date has passed.</p>
+    <button onclick="nextStep(9, 'rat')">Actively Enrolled (RAT)</button>
+    <button onclick="nextStep(9, 'dormant')">Inactive (Dormant)</button>
+    <button onclick="nextStep(9, 'prompt')">Prompt for Enrollment</button>
+    <div id="step9-rat" class="step-content">
+      <p>If the student is active, update the status to “RAT” to confirm active enrollment and save the record.</p>
+    </div>
+    <div id="step9-dormant" class="step-content">
+      <p>If the student is inactive with a past start date, set the status to “Dormant” to resolve. Ensure no upcoming dates require adjustment and save.</p>
+    </div>
+    <div id="step9-prompt" class="step-content">
+      <p>If enrollment confirmation is pending, set status to “Prompt for Enrollment” and reach out for confirmation to update status.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggleStep(id) {
+    // Collapse all open steps for a cleaner interaction
+    document.querySelectorAll('.step-content.active').forEach(step => step.classList.remove('active'));
+    
+    // Toggle selected step with smooth scroll
+    const selectedStep = document.getElementById(id);
+    selectedStep.classList.toggle('active');
+    selectedStep.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function nextStep(step, option) {
+    const stepDiv = document.getElementById('step' + step);
+    const options = stepDiv.querySelectorAll('.step-content');
+
+    // Hide all other options, show the selected one with smooth transition
+    options.forEach(optionDiv => optionDiv.classList.remove('active'));
+    const selectedOption = document.getElementById(`step${step}-${option}`);
+    if (selectedOption) {
+      selectedOption.classList.add('active');
+      selectedOption.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+</script>
+
+
+</body>
+</html>
+
+</body>
+</html>
+
+</body>
+</html>
